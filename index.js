@@ -1,9 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const bp = require('body-parser');
+const bodyParser = require('body-parser');
 
 const app = express();
+const urlStore = {};
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -11,11 +12,6 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 
 app.use('/public', express.static(`${process.cwd()}/public`));
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
-})); 
-
 
 app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
@@ -26,8 +22,15 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
+app.use(express.json());
+app.use(express.urlencoded());
+
 app.post('/api/shorturl', (req, res) => {
-   res.json({ original_url : req.params.short_url, short_url : 1})
+  const original_url = req.body.url;
+  const short_url = Date.now().toString();
+  urlStore[short_url] = original_url;
+  
+  res.json({ original_url , short_url });
 });
 
 app.listen(port, function() {
