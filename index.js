@@ -25,11 +25,17 @@ app.get('/api/hello', function(req, res) {
 app.use(express.json());
 app.use(express.urlencoded());
 
+app.get('/api/shorturl/:shorturl', (req, res) => {
+  let shortUrl = req.params.shorturl;
+  // if (urlStore.url) 
+  res.redirect(urlStore[shortUrl]);
+});
+
 app.post('/api/shorturl', (req, res) => {
   const original_url = req.body.url;
   const short_url = Date.now().toString();
   urlStore[short_url] = original_url;
-  
+    
   res.json({ original_url , short_url });
 });
 
