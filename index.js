@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const dns = require('dns');
+const url = require('url');
 
 const app = express();
 const urlStore = {};
@@ -31,21 +32,26 @@ app.get('/api/shorturl/:shorturl', (req, res) => {
   res.redirect(urlStore[shortUrl]);
 });
 
-app.post('/api/shorturl', (req, res) => {
-  const original_url = req.body.url;
+app.post('/api/shorturl', async (req, res) => {
+  const originalUrl = req.body.url;
+  const invalidObj = { error: 'invalid url' };
 
-  dns.lookup(original_url.replace(/(http:\/\/|https:\/\/)/g, ''), (err, address) => {
-    if (err) { 
-      console.error(err);
-      res.json({error: 'invalid url'}) 
+  try {
+    const urlObj = new URL(originalUrl);
+    if (urlObj.protocol && urlObj.hostname) {
+      const shortUrl = Date.now().toString();
+      urlStore[shortUrl] = originalUrl;
+
+      const address = await dns.promises.lookup(urlObj.hostname);
+      res.json({ originalUrl, shortUrl });
     } else {
-      const short_url = Date.now().toString();
-      urlStore[short_url] = original_url;
-        
-      res.json({ original_url , short_url });
+      res.json(invalidObj);
     }
-  });
+  } catch (err) {
+    res.json(invalidObj);
+  }
 });
+
 
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);
