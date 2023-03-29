@@ -43,7 +43,7 @@ app.post('/api/shorturl', async (req, res) => {
       urlStore[shortUrl] = originalUrl;
 
       const address = await dns.promises.lookup(urlObj.hostname);
-      res.json({ originalUrl, shortUrl });
+      res.json({ original_url: originalUrl, short_url: shortUrl });
     } else {
       res.json(invalidObj);
     }
