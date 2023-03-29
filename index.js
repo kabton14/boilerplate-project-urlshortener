@@ -24,18 +24,17 @@ app.get('/api/hello', function(req, res) {
 });
 
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/api/shorturl/:shorturl', (req, res) => {
    let shortUrl = req.params.shorturl;
-  // if (urlStore.url) 
   res.redirect(urlStore[shortUrl]);
 });
 
 app.post('/api/shorturl', (req, res) => {
-  const original_url = req.body.url.replace(/(http:\/\/|https:\/\/)/g, '');
+  const original_url = req.body.url;
 
-  dns.lookup(original_url, (err, address) => {
+  dns.lookup(original_url.replace(/(http:\/\/|https:\/\/)/g, ''), (err, address) => {
     if (err) { 
       console.error(err);
       res.json({error: 'invalid url'}) 
